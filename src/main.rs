@@ -17,6 +17,22 @@ impl SpaceTradersClient {
         Ok(a)
     }
 }
+
+struct AccountDetails {
+    account_id: String,
+    account_name: String,
+    headquarters: String,
+    credit: i128,
+    starting_faction: String,
+    ship_count: u16,
+}
+
+impl AccountDetails {
+    fn new(account_details_response: Response) -> Self {
+        account_details_response.
+        AccountDetails {}
+    }
+}
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     let f = std::fs::File::open("etc/agents.yaml")?;
@@ -33,10 +49,10 @@ async fn main() -> Result<(), anyhow::Error> {
 
 async fn get_account_details(
     client_space_traders: SpaceTradersClient,
-) -> Result<(), anyhow::Error> {
-    let account_detail = client_space_traders
+) -> Result<AccountDetails, anyhow::Error> {
+    let account_details_response = client_space_traders
         .get("https://api.spacetraders.io/v2/my/agent")
         .await?;
-    println!("{:?}", account_detail.text().await?);
-    Ok(())
+    let account_details = AccountDetails::new(account_details_response);
+    Ok(account_details)
 }
