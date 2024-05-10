@@ -1,4 +1,4 @@
-use crate::SpaceTradersClient;
+use crate::space_traders_client::SpaceTradersClient;
 use anyhow::anyhow;
 use reqwest::Response;
 use serde::{Deserialize, Serialize};
@@ -34,7 +34,7 @@ impl AccountDetails {
 }
 
 pub async fn get_account_details(
-    client_space_traders: SpaceTradersClient,
+    client_space_traders: &SpaceTradersClient,
 ) -> Result<AccountDetails, anyhow::Error> {
     let account_details_response = client_space_traders
         .get("https://api.spacetraders.io/v2/my/agent")
