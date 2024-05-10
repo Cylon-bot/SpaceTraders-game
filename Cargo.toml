@@ -1,5 +1,5 @@
 [package]
-name = "SpaceTraders-game"
+name = "space_traders-game"
 version = "0.1.0"
 edition = "2021"
 
@@ -10,3 +10,5 @@ reqwest = "0.12.4"
 anyhow = "1.0.83"
 tokio = { version = "1", features = ["full"] }
 serde_yaml = "0.9.34+deprecated"
+serde_json = "1.0.117"
+serde ={ version = "1.0.201", features = ["derive"] }
