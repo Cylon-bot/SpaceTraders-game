@@ -19,16 +19,8 @@ pub struct AccountDetails {
 }
 
 impl AccountDetails {
-    async fn new(account_details_response: Response) -> Result<Self, anyhow::Error> {
-        let json_content: Value = {
-            let json_content: Result<Value, _> =
-                serde_json::from_str(&account_details_response.text().await?);
-            match json_content?.get("data") {
-                Some(json_content) => Ok(json_content.clone()),
-                None => Err(anyhow!("no data found")),
-            }?
-        };
-        let deserialized: AccountDetails = serde_json::from_value(json_content)?;
+    async fn new(account_details_json: Value) -> Result<Self, anyhow::Error> {
+        let deserialized: AccountDetails = serde_json::from_value(account_details_json)?;
         Ok(deserialized)
     }
 }
@@ -39,6 +31,14 @@ pub async fn get_account_details(
     let account_details_response = client_space_traders
         .get("https://api.spacetraders.io/v2/my/agent")
         .await?;
-    let account_details = AccountDetails::new(account_details_response).await?;
+    let json_content: Value = {
+        let json_content: Result<Value, _> =
+            serde_json::from_str(&account_details_response.text().await?);
+        match json_content?.get("data") {
+            Some(json_content) => Ok(json_content.clone()),
+            None => Err(anyhow!("no data found")),
+        }?
+    };
+    let account_details = AccountDetails::new(json_content).await?;
     Ok(account_details)
 }
