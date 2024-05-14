@@ -1,6 +1,5 @@
 use crate::space_traders_client::SpaceTradersClient;
 use anyhow::anyhow;
-use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

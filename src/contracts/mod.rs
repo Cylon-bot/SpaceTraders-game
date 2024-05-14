@@ -78,8 +78,7 @@ pub async fn get_all_contracts(
                     .expect("failed to execute process")
             } else {
                 Command::new("sh")
-                    .arg("-c")
-                    .arg(&jq_command)
+                    .args(["-c", &jq_command])
                     .output()
                     .expect("failed to execute process")
             };
