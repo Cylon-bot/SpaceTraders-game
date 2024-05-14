@@ -1,39 +1,24 @@
+use crate::space_traders_client::SpaceTradersClient;
 use anyhow::anyhow;
-use reqwest::Response;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{alloc, collections::HashMap, vec};
+use std::process::Command;
 
-use crate::space_traders_client::SpaceTradersClient;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ContractDetails {
-    #[serde(rename(deserialize = "id"))]
     contract_id: String,
-    #[serde(rename(deserialize = "factionSymbol"))]
     faction: String,
-    #[serde(rename(deserialize = "type"))]
     contract_type: String,
-    #[serde(flatten)]
     deadline: String,
-    #[serde(rename(deserialize = "onAccepted"), flatten)]
     payment_on_accepted: usize,
-    #[serde(rename(deserialize = "onFulfilled"), flatten)]
     payment_on_fulfilled: usize,
-    #[serde(rename(deserialize = "terms"))]
-    deliver: DeliveryList,
+    deliver_list: Vec<Delivery>,
     accepted: bool,
     fulfilled: bool,
-    #[serde(rename(deserialize = "expiration"))]
     expiration_date: String,
-    #[serde(rename(deserialize = "deadlineToAccept"))]
     deadline_to_accept: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct DeliveryList {
-    #[serde(rename(deserialize = "deliver"))]
-    delivery: Vec<Delivery>,
-}
 #[derive(Serialize, Deserialize, Debug)]
 struct Delivery {
     #[serde(rename(deserialize = "tradeSymbol"))]
@@ -55,7 +40,7 @@ impl ContractDetails {
 
 pub async fn get_all_contracts(
     client_space_traders: &SpaceTradersClient,
-) -> Result<ContractDetails, anyhow::Error> {
+) -> Result<Vec<ContractDetails>, anyhow::Error> {
     let all_contracts_response = client_space_traders
         .get("https://api.spacetraders.io/v2/my/contracts")
         .await?;
@@ -69,14 +54,39 @@ pub async fn get_all_contracts(
             None => Err(anyhow!("no data found")),
         }?
     };
-    println!("{}", all_contracts_json_contents);
     if let serde_json::Value::Array(contracts) = all_contracts_json_contents {
         for contract in contracts {
-            all_contracts.push(ContractDetails::new(contract).await?);
+            let jq_command: String = format!(
+                "'{}' | jq '{{
+                    contract_id: .id, 
+                    faction: .factionSymbol, 
+                    contract_type: .type, 
+                    deadline: .terms.deadline, 
+                    payment_on_accepted: .terms.payment.onAccepted, 
+                    payment_on_fulfilled: .terms.payment.onFulfilled, 
+                    deliver_list: .terms.deliver, 
+                    accepted: .accepted, 
+                    fulfilled: .fulfilled, 
+                    expiration_date: .expiration, 
+                    deadline_to_accept: .deadlineToAccept}}'",
+                contract
+            );
+            let output_command = if cfg!(target_os = "windows") {
+                Command::new("powershell")
+                    .args(["/C", &jq_command])
+                    .output()
+                    .expect("failed to execute process")
+            } else {
+                Command::new("sh")
+                    .arg("-c")
+                    .arg(&jq_command)
+                    .output()
+                    .expect("failed to execute process")
+            };
+            let output_to_json: Value =
+                serde_json::from_str(&String::from_utf8(output_command.stdout)?)?;
+            all_contracts.push(ContractDetails::new(output_to_json).await?);
         }
     }
-    println!("{:?}", all_contracts);
-    // let account_details = ContractDetails::new(all_contracts_response).await?;
-    // Ok(account_details)
-    todo!()
+    Ok(all_contracts)
 }

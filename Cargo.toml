@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-reqwest = "0.12.4"
 anyhow = "1.0.83"
-tokio = { version = "1", features = ["full"] }
-serde_yaml = "0.9.34+deprecated"
-serde_json = "1.0.117"
+reqwest = "0.12.4"
 serde ={ version = "1.0.201", features = ["derive"] }
+serde_json = "1.0.117"
+serde_yaml = "0.9.34+deprecated"
+tokio = { version = "1", features = ["full"] }

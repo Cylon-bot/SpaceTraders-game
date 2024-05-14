@@ -21,6 +21,6 @@ async fn main() -> Result<(), anyhow::Error> {
     let client_space_traders = SpaceTradersClient::new(agent)?;
     let account_details = get_account_details(&client_space_traders).await?;
     let contracts_details = get_all_contracts(&client_space_traders).await?;
-    println!("{:?}", account_details);
+    println!("{:?}", contracts_details);
     Ok(())
 }
