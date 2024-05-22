@@ -38,6 +38,12 @@ impl ContractDetails {
     }
 }
 
+impl From<Value> for ContractDetails {
+    fn from(value: Value) -> Self {
+        todo!("replace JQ by from for contractDetails")
+    }
+}
+
 pub async fn get_all_contracts(
     client_space_traders: &SpaceTradersClient,
 ) -> Result<Vec<ContractDetails>, anyhow::Error> {
